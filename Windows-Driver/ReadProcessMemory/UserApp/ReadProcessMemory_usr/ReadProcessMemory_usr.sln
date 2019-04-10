@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReadProcessMemory_usr", "ReadProcessMemory_usr\ReadProcessMemory_usr.vcxproj", "{90A71059-9A88-4220-B788-3EA7534B349A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_process", "test_process\test_process.vcxproj", "{1577858F-141E-4AD4-8F0F-9EE5B255F234}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90A71059-9A88-4220-B788-3EA7534B349A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{90A71059-9A88-4220-B788-3EA7534B349A}.Debug|Win32.Build.0 = Debug|Win32
+		{90A71059-9A88-4220-B788-3EA7534B349A}.Release|Win32.ActiveCfg = Release|Win32
+		{90A71059-9A88-4220-B788-3EA7534B349A}.Release|Win32.Build.0 = Release|Win32
+		{1577858F-141E-4AD4-8F0F-9EE5B255F234}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1577858F-141E-4AD4-8F0F-9EE5B255F234}.Debug|Win32.Build.0 = Debug|Win32
+		{1577858F-141E-4AD4-8F0F-9EE5B255F234}.Release|Win32.ActiveCfg = Release|Win32
+		{1577858F-141E-4AD4-8F0F-9EE5B255F234}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,91 @@
+;
+; MemAllocTest.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=MemAllocTest.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+MemAllocTest.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%MemAllocTest.DeviceDesc%=MemAllocTest_Device, Root\MemAllocTest ; TODO: edit hw-id
+
+[MemAllocTest_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+MemAllocTest.sys
+
+;-------------- Service installation
+[MemAllocTest_Device.NT.Services]
+AddService = MemAllocTest,%SPSVCINST_ASSOCSERVICE%, MemAllocTest_Service_Inst
+
+; -------------- MemAllocTest driver install sections
+[MemAllocTest_Service_Inst]
+DisplayName    = %MemAllocTest.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\MemAllocTest.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- MemAllocTest_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+MemAllocTest_Device_CoInstaller_CopyFiles = 11
+
+[MemAllocTest_Device.NT.CoInstallers]
+AddReg=MemAllocTest_Device_CoInstaller_AddReg
+CopyFiles=MemAllocTest_Device_CoInstaller_CopyFiles
+
+[MemAllocTest_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[MemAllocTest_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[MemAllocTest_Device.NT.Wdf]
+KmdfService =  MemAllocTest, MemAllocTest_wdfsect
+[MemAllocTest_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="" ; TODO: add ManufacturerName
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "MemAllocTest Installation Disk"
+MemAllocTest.DeviceDesc = "MemAllocTest Device"
+MemAllocTest.SVCDESC = "MemAllocTest Service"

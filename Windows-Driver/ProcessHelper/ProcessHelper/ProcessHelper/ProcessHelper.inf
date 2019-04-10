@@ -1,0 +1,91 @@
+;
+; ProcessHelper.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=ProcessHelper.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ProcessHelper.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%ProcessHelper.DeviceDesc%=ProcessHelper_Device, Root\ProcessHelper ; TODO: edit hw-id
+
+[ProcessHelper_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+ProcessHelper.sys
+
+;-------------- Service installation
+[ProcessHelper_Device.NT.Services]
+AddService = ProcessHelper,%SPSVCINST_ASSOCSERVICE%, ProcessHelper_Service_Inst
+
+; -------------- ProcessHelper driver install sections
+[ProcessHelper_Service_Inst]
+DisplayName    = %ProcessHelper.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ProcessHelper.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- ProcessHelper_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+ProcessHelper_Device_CoInstaller_CopyFiles = 11
+
+[ProcessHelper_Device.NT.CoInstallers]
+AddReg=ProcessHelper_Device_CoInstaller_AddReg
+CopyFiles=ProcessHelper_Device_CoInstaller_CopyFiles
+
+[ProcessHelper_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ProcessHelper_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[ProcessHelper_Device.NT.Wdf]
+KmdfService =  ProcessHelper, ProcessHelper_wdfsect
+[ProcessHelper_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="" ; TODO: add ManufacturerName
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "ProcessHelper Installation Disk"
+ProcessHelper.DeviceDesc = "ProcessHelper Device"
+ProcessHelper.SVCDESC = "ProcessHelper Service"

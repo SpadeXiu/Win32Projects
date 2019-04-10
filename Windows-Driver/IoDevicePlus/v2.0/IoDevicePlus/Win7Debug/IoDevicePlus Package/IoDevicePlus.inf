@@ -1,0 +1,91 @@
+;
+; IoDevicePlus.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=IoDevicePlus.cat
+DriverVer=03/31/2018,12.40.37.685
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+IoDevicePlus.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NTx86
+
+[Standard.NTx86]
+%IoDevicePlus.DeviceDesc%=IoDevicePlus_Device, Root\IoDevicePlus ; TODO: edit hw-id
+
+[IoDevicePlus_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+IoDevicePlus.sys
+
+;-------------- Service installation
+[IoDevicePlus_Device.NT.Services]
+AddService = IoDevicePlus,%SPSVCINST_ASSOCSERVICE%, IoDevicePlus_Service_Inst
+
+; -------------- IoDevicePlus driver install sections
+[IoDevicePlus_Service_Inst]
+DisplayName    = %IoDevicePlus.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\IoDevicePlus.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- IoDevicePlus_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+IoDevicePlus_Device_CoInstaller_CopyFiles = 11
+
+[IoDevicePlus_Device.NT.CoInstallers]
+AddReg=IoDevicePlus_Device_CoInstaller_AddReg
+CopyFiles=IoDevicePlus_Device_CoInstaller_CopyFiles
+
+[IoDevicePlus_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01011.dll,WdfCoInstaller"
+
+[IoDevicePlus_Device_CoInstaller_CopyFiles]
+WdfCoInstaller01011.dll
+
+[SourceDisksFiles]
+WdfCoInstaller01011.dll=1 ; make sure the number matches with SourceDisksNames
+
+[IoDevicePlus_Device.NT.Wdf]
+KmdfService =  IoDevicePlus, IoDevicePlus_wdfsect
+[IoDevicePlus_wdfsect]
+KmdfLibraryVersion = 1.11
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="" ; TODO: add ManufacturerName
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "IoDevicePlus Installation Disk"
+IoDevicePlus.DeviceDesc = "IoDevicePlus Device"
+IoDevicePlus.SVCDESC = "IoDevicePlus Service"

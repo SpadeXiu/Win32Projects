@@ -1,0 +1,91 @@
+;
+; ssdt_hook.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=ssdt_hook.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ssdt_hook.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%ssdt_hook.DeviceDesc%=ssdt_hook_Device, Root\ssdt_hook ; TODO: edit hw-id
+
+[ssdt_hook_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+ssdt_hook.sys
+
+;-------------- Service installation
+[ssdt_hook_Device.NT.Services]
+AddService = ssdt_hook,%SPSVCINST_ASSOCSERVICE%, ssdt_hook_Service_Inst
+
+; -------------- ssdt_hook driver install sections
+[ssdt_hook_Service_Inst]
+DisplayName    = %ssdt_hook.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ssdt_hook.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- ssdt_hook_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+ssdt_hook_Device_CoInstaller_CopyFiles = 11
+
+[ssdt_hook_Device.NT.CoInstallers]
+AddReg=ssdt_hook_Device_CoInstaller_AddReg
+CopyFiles=ssdt_hook_Device_CoInstaller_CopyFiles
+
+[ssdt_hook_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ssdt_hook_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[ssdt_hook_Device.NT.Wdf]
+KmdfService =  ssdt_hook, ssdt_hook_wdfsect
+[ssdt_hook_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="" ; TODO: add ManufacturerName
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "ssdt_hook Installation Disk"
+ssdt_hook.DeviceDesc = "ssdt_hook Device"
+ssdt_hook.SVCDESC = "ssdt_hook Service"

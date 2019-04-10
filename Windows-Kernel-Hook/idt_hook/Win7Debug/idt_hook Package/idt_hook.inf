@@ -1,0 +1,91 @@
+;
+; idt_hook.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=idt_hook.cat
+DriverVer=12/20/2018,10.42.5.790
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+idt_hook.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NTx86
+
+[Standard.NTx86]
+%idt_hook.DeviceDesc%=idt_hook_Device, Root\idt_hook ; TODO: edit hw-id
+
+[idt_hook_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+idt_hook.sys
+
+;-------------- Service installation
+[idt_hook_Device.NT.Services]
+AddService = idt_hook,%SPSVCINST_ASSOCSERVICE%, idt_hook_Service_Inst
+
+; -------------- idt_hook driver install sections
+[idt_hook_Service_Inst]
+DisplayName    = %idt_hook.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\idt_hook.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- idt_hook_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+idt_hook_Device_CoInstaller_CopyFiles = 11
+
+[idt_hook_Device.NT.CoInstallers]
+AddReg=idt_hook_Device_CoInstaller_AddReg
+CopyFiles=idt_hook_Device_CoInstaller_CopyFiles
+
+[idt_hook_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01011.dll,WdfCoInstaller"
+
+[idt_hook_Device_CoInstaller_CopyFiles]
+WdfCoInstaller01011.dll
+
+[SourceDisksFiles]
+WdfCoInstaller01011.dll=1 ; make sure the number matches with SourceDisksNames
+
+[idt_hook_Device.NT.Wdf]
+KmdfService =  idt_hook, idt_hook_wdfsect
+[idt_hook_wdfsect]
+KmdfLibraryVersion = 1.11
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="" ; TODO: add ManufacturerName
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "idt_hook Installation Disk"
+idt_hook.DeviceDesc = "idt_hook Device"
+idt_hook.SVCDESC = "idt_hook Service"

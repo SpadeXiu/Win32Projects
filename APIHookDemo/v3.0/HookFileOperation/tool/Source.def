@@ -1,0 +1,8 @@
+LIBRARY
+
+EXPORTS
+	MyCreateFileW
+	MyCreateFileA
+	MyReadFile
+	MyShellExecuteA
+	MyShellExecuteW

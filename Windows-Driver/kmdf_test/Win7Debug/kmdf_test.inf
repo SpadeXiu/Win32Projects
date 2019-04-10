@@ -1,0 +1,91 @@
+;
+; kmdf_test.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=kmdf_test.cat
+DriverVer=02/27/2018,18.29.8.55
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+kmdf_test.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NTx86
+
+[Standard.NTx86]
+%kmdf_test.DeviceDesc%=kmdf_test_Device, Root\kmdf_test ; TODO: edit hw-id
+
+[kmdf_test_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+kmdf_test.sys
+
+;-------------- Service installation
+[kmdf_test_Device.NT.Services]
+AddService = kmdf_test,%SPSVCINST_ASSOCSERVICE%, kmdf_test_Service_Inst
+
+; -------------- kmdf_test driver install sections
+[kmdf_test_Service_Inst]
+DisplayName    = %kmdf_test.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\kmdf_test.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- kmdf_test_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+kmdf_test_Device_CoInstaller_CopyFiles = 11
+
+[kmdf_test_Device.NT.CoInstallers]
+AddReg=kmdf_test_Device_CoInstaller_AddReg
+CopyFiles=kmdf_test_Device_CoInstaller_CopyFiles
+
+[kmdf_test_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01011.dll,WdfCoInstaller"
+
+[kmdf_test_Device_CoInstaller_CopyFiles]
+WdfCoInstaller01011.dll
+
+[SourceDisksFiles]
+WdfCoInstaller01011.dll=1 ; make sure the number matches with SourceDisksNames
+
+[kmdf_test_Device.NT.Wdf]
+KmdfService =  kmdf_test, kmdf_test_wdfsect
+[kmdf_test_wdfsect]
+KmdfLibraryVersion = 1.11
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="" ; TODO: add ManufacturerName
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "kmdf_test Installation Disk"
+kmdf_test.DeviceDesc = "kmdf_test Device"
+kmdf_test.SVCDESC = "kmdf_test Service"

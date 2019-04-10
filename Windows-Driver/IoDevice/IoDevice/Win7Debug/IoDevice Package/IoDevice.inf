@@ -1,0 +1,91 @@
+;
+; IoDevice.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=IoDevice.cat
+DriverVer=03/20/2018,20.36.27.898
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+IoDevice.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NTx86
+
+[Standard.NTx86]
+%IoDevice.DeviceDesc%=IoDevice_Device, Root\IoDevice ; TODO: edit hw-id
+
+[IoDevice_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+IoDevice.sys
+
+;-------------- Service installation
+[IoDevice_Device.NT.Services]
+AddService = IoDevice,%SPSVCINST_ASSOCSERVICE%, IoDevice_Service_Inst
+
+; -------------- IoDevice driver install sections
+[IoDevice_Service_Inst]
+DisplayName    = %IoDevice.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\IoDevice.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- IoDevice_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+IoDevice_Device_CoInstaller_CopyFiles = 11
+
+[IoDevice_Device.NT.CoInstallers]
+AddReg=IoDevice_Device_CoInstaller_AddReg
+CopyFiles=IoDevice_Device_CoInstaller_CopyFiles
+
+[IoDevice_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01011.dll,WdfCoInstaller"
+
+[IoDevice_Device_CoInstaller_CopyFiles]
+WdfCoInstaller01011.dll
+
+[SourceDisksFiles]
+WdfCoInstaller01011.dll=1 ; make sure the number matches with SourceDisksNames
+
+[IoDevice_Device.NT.Wdf]
+KmdfService =  IoDevice, IoDevice_wdfsect
+[IoDevice_wdfsect]
+KmdfLibraryVersion = 1.11
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="" ; TODO: add ManufacturerName
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "IoDevice Installation Disk"
+IoDevice.DeviceDesc = "IoDevice Device"
+IoDevice.SVCDESC = "IoDevice Service"

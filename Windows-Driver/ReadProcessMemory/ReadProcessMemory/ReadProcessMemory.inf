@@ -1,0 +1,91 @@
+;
+; ReadProcessMemory.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=ReadProcessMemory.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ReadProcessMemory.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%ReadProcessMemory.DeviceDesc%=ReadProcessMemory_Device, Root\ReadProcessMemory ; TODO: edit hw-id
+
+[ReadProcessMemory_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+ReadProcessMemory.sys
+
+;-------------- Service installation
+[ReadProcessMemory_Device.NT.Services]
+AddService = ReadProcessMemory,%SPSVCINST_ASSOCSERVICE%, ReadProcessMemory_Service_Inst
+
+; -------------- ReadProcessMemory driver install sections
+[ReadProcessMemory_Service_Inst]
+DisplayName    = %ReadProcessMemory.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ReadProcessMemory.sys
+LoadOrderGroup = Extended Base
+
+;
+;--- ReadProcessMemory_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+ReadProcessMemory_Device_CoInstaller_CopyFiles = 11
+
+[ReadProcessMemory_Device.NT.CoInstallers]
+AddReg=ReadProcessMemory_Device_CoInstaller_AddReg
+CopyFiles=ReadProcessMemory_Device_CoInstaller_CopyFiles
+
+[ReadProcessMemory_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ReadProcessMemory_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[ReadProcessMemory_Device.NT.Wdf]
+KmdfService =  ReadProcessMemory, ReadProcessMemory_wdfsect
+[ReadProcessMemory_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="" ; TODO: add ManufacturerName
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "ReadProcessMemory Installation Disk"
+ReadProcessMemory.DeviceDesc = "ReadProcessMemory Device"
+ReadProcessMemory.SVCDESC = "ReadProcessMemory Service"
