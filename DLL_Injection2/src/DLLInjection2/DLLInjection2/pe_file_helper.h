@@ -16,6 +16,7 @@ public:
 	void SeekToNtHeaders();
 	void SeekToSectionHeader();
 	void SeekToImportDirectoryTable();
+	void ReleaseBoundImportTable();
 	void InjectDll(PCSTR pszFileName, PCSTR pszProcName);
 private:
 	DWORD Rva2Offset(DWORD dwRva);

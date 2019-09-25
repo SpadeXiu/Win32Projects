@@ -29,10 +29,18 @@ void PeFileHelper::SeekToImportDirectoryTable()
 	m_pCurrentFilePointer = (PCHAR)m_pFileBase + Rva2Offset(importDirectoryTableRva);
 }
 
+void PeFileHelper::ReleaseBoundImportTable()
+{
+	m_pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT].VirtualAddress = 0;
+	m_pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT].Size = 0;
+}
+
 void PeFileHelper::InjectDll(PCSTR pszFileName, PCSTR pszProcName)
 {
-	DWORD numSections = m_pNtHeaders->FileHeader.NumberOfSections;
+	ReleaseBoundImportTable();
 	SeekToSectionHeader();
+
+	DWORD numSections = m_pNtHeaders->FileHeader.NumberOfSections;
 	PIMAGE_SECTION_HEADER pFirstSectionHeader = (PIMAGE_SECTION_HEADER)m_pCurrentFilePointer;
 	PIMAGE_SECTION_HEADER pLastSectionHeader = pFirstSectionHeader + numSections - 1;
 	PCHAR pLastSectionStart = (PCHAR)m_pFileBase + pLastSectionHeader->PointerToRawData;
@@ -42,17 +50,23 @@ void PeFileHelper::InjectDll(PCSTR pszFileName, PCSTR pszProcName)
 	PIMAGE_IMPORT_DESCRIPTOR pFirstIDTEntry = (PIMAGE_IMPORT_DESCRIPTOR)m_pCurrentFilePointer;
 	DWORD oldIDTSize = m_pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size;
 	DWORD newIDTSize = oldIDTSize + sizeof(IMAGE_IMPORT_DESCRIPTOR);
-	DWORD lastSectionSizeIncrement = newIDTSize + // IDT, new entry included
+	DWORD totalSize = newIDTSize + // IDT, new entry included
 		sizeof(void*) * 2 + // INT - one entry for pszProcName, one entry for NULL
 		sizeof(void*) * 2 + // IAT - one entry for pszProcName, one entry for NULL
 		strlen(pszFileName) + 1 +
 		sizeof(WORD) + strlen(pszProcName) + 1;
 
-	PCHAR p = pLastSectionEnd;
+	if (totalSize > pLastSectionHeader->SizeOfRawData - pLastSectionHeader->Misc.VirtualSize) {
+		printf("no enough space left in the last section.\n");
+		return;
+	}
+
+	PCHAR pDataBlockStart = pLastSectionStart + pLastSectionHeader->Misc.VirtualSize;
+	PCHAR p = pDataBlockStart;
 	PCHAR pINT, pIAT, ppszFileName, ppszProcName;
 	memcpy(p, pFirstIDTEntry, oldIDTSize);
 	p += oldIDTSize;
-	memset(p, 0, sizeof(IMAGE_IMPORT_DESCRIPTOR)); // for new IDT entry
+	memset(p, 0, sizeof(IMAGE_IMPORT_DESCRIPTOR));
 	p += sizeof(IMAGE_IMPORT_DESCRIPTOR);
 	pINT = p;
 	pIAT = p + sizeof(void*) * 2;
@@ -66,8 +80,8 @@ void PeFileHelper::InjectDll(PCSTR pszFileName, PCSTR pszProcName)
 	p += sizeof(WORD);
 	strcpy(p, pszProcName);
 
-	PIMAGE_IMPORT_DESCRIPTOR pNewIDTEntry = (PIMAGE_IMPORT_DESCRIPTOR)
-		(pLastSectionEnd + oldIDTSize - sizeof(IMAGE_IMPORT_DESCRIPTOR)); // oldIDTSize包含了最后一个空结构体的大小, 所以要减回去
+	PIMAGE_IMPORT_DESCRIPTOR pNewIDTEntry = (PIMAGE_IMPORT_DESCRIPTOR)(pDataBlockStart + oldIDTSize
+		- sizeof(IMAGE_IMPORT_DESCRIPTOR)); // oldIDTSize包含了最后一个空结构体的大小, 所以要减回去
 
 	// 填充Import Name Table(INT)
 	*(DWORD*)pINT = pLastSectionHeader->VirtualAddress + (ppszProcName - pLastSectionStart);
@@ -82,14 +96,11 @@ void PeFileHelper::InjectDll(PCSTR pszFileName, PCSTR pszProcName)
 
 	// 修改NT Headers中记录IDT的RVA和Size, 使其对应新的IDT
 	m_pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress =
-		pLastSectionHeader->VirtualAddress + pLastSectionHeader->SizeOfRawData;
+		pLastSectionHeader->VirtualAddress + pLastSectionHeader->Misc.VirtualSize;
 	m_pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = newIDTSize;
 
-	// 将最后一个节扩大 lastSectionSizeIncrement 个字节
-	DWORD fileAlignment = m_pNtHeaders->OptionalHeader.FileAlignment;
-	DWORD x = pLastSectionHeader->SizeOfRawData + lastSectionSizeIncrement;
-	pLastSectionHeader->SizeOfRawData = (x + fileAlignment - 1) / fileAlignment * fileAlignment;
-	pLastSectionHeader->Misc.VirtualSize = pLastSectionHeader->SizeOfRawData;
+	// 修改最后一个节的实际数据长度, 并添加可写属性
+	pLastSectionHeader->Misc.VirtualSize += totalSize;
 	pLastSectionHeader->Characteristics |= IMAGE_SCN_MEM_WRITE;
 	
 	return;
