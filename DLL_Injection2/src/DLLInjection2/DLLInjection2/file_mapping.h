@@ -11,7 +11,6 @@ public:
 	PVOID GetFileMappingBase();
 	BOOL Flush();
 private:
-	const DWORD kExtraBlockSize = 4096;
 	HANDLE m_hFile;
 	HANDLE m_hFileMapping;
 	PVOID m_pFileMappingBase;

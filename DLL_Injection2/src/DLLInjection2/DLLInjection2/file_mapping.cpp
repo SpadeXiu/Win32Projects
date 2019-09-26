@@ -10,8 +10,7 @@ FileMapping::FileMapping(PCWSTR pszFileName)
 	assert(m_hFile != INVALID_HANDLE_VALUE);
 
 	DWORD dwFileSize = ::GetFileSize(m_hFile, NULL);
-	m_hFileMapping = ::CreateFileMapping(m_hFile, NULL, PAGE_READWRITE, 0,
-		dwFileSize + kExtraBlockSize, pszFileName);
+	m_hFileMapping = ::CreateFileMapping(m_hFile, NULL, PAGE_READWRITE, 0, dwFileSize, pszFileName);
 	assert(m_hFileMapping != INVALID_HANDLE_VALUE);
 
 	m_pFileMappingBase = ::MapViewOfFile(m_hFileMapping, FILE_MAP_WRITE, 0, 0, 0);
