@@ -35,7 +35,7 @@ typedef struct _LDR_MODULE {
 	PVOID                   EntryPoint; // 该模块的入口 +0x1c
 	ULONG                   SizeOfImage; // 该模块的影像大小 +0x20
 	UNICODE_STRING          FullDllName; // 包含路径的模块名 +0x24
-	UNICODE_STRING          BaseDllName; // 不包含路径的模块名 +0x28
+	UNICODE_STRING          BaseDllName; // 不包含路径的模块名 +0x2C
 	ULONG                   Flags;
 	SHORT                   LoadCount; // 该模块的引用计数
 	SHORT                   TlsIndex;
