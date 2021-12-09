@@ -6,6 +6,7 @@
 *.opensdf
 *.exe
 *.dll
+*.suo
 
 **/x64/
 **/Debug/
