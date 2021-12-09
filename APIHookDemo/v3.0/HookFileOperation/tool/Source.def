@@ -6,3 +6,6 @@ EXPORTS
 	MyReadFile
 	MyShellExecuteA
 	MyShellExecuteW
+	MyHeapAlloc
+	MyVirtualAlloc
+	MyVirtualFree

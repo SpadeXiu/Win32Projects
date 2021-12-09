@@ -3,50 +3,41 @@
 #include <conio.h>
 #include "Monitor.h"
 
-int main()
-{
-	int err_code = EXIT_FAILURE;
-	DWORD dwProcessId = 0;
-	WCHAR szLibFilePath[MAX_PATH] = { 0 };
-	PWCHAR pFileName = NULL;
-	
-	printf("Process Id? ");
-	scanf("%ld", &dwProcessId);
+int main() {
+  int err_code = EXIT_FAILURE;
+  DWORD dwProcessId = 0;
+  WCHAR szLibFilePath[MAX_PATH] = { 0 };
+  PWCHAR pFileName = NULL;
 
-	// 取 Hook.DLL 绝对路径
-	GetModuleFileName(NULL, szLibFilePath, MAX_PATH);
-	pFileName = wcsrchr(szLibFilePath, '\\') + 1;
-	lstrcpy(pFileName, TEXT("Hook.DLL"));
+  printf("Process Id? ");
+  scanf("%ld", &dwProcessId);
 
-	Monitor monitor = Monitor(dwProcessId, szLibFilePath);
-	if (!monitor.EnablePrivilege(SE_DEBUG_NAME))
-	{
-		printf("Failure to enable privilege!\n");
-	}
-	else
-	{
-		printf("Success to enable privilege!\n");
-	}
+  // 取 Hook.DLL 绝对路径
+  GetModuleFileName(NULL, szLibFilePath, MAX_PATH);
+  pFileName = wcsrchr(szLibFilePath, '\\') + 1;
+  lstrcpy(pFileName, TEXT("Hook.DLL"));
 
-	if (monitor.InjectLib())
-	{
-		if (monitor.EjectLib())
-		{
-			err_code = EXIT_SUCCESS;
-		}
-	}
+  Monitor monitor = Monitor(dwProcessId, szLibFilePath);
+  if (!monitor.EnablePrivilege(SE_DEBUG_NAME)) {
+    printf("Failure to enable privilege!\n");
+  } else {
+    printf("Success to enable privilege!\n");
+  }
 
-	if (err_code == EXIT_SUCCESS)
-	{
-		printf("Injection/Ejection succeeded!\n");
-	}
-	else
-	{
-		printf("Injection failed! Error code: #%d\n", GetLastError());
-	}
+  if (monitor.InjectLib()) {
+    if (monitor.EjectLib()) {
+      err_code = EXIT_SUCCESS;
+    }
+  }
 
-	printf("Precess any key to exit...");
-	_getch();
+  if (err_code == EXIT_SUCCESS) {
+    printf("Injection/Ejection succeeded!\n");
+  } else {
+    printf("Injection failed! Error code: #%d\n", GetLastError());
+  }
 
-	return err_code;
+  printf("Precess any key to exit...");
+  _getch();
+
+  return err_code;
 }

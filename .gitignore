@@ -1,0 +1,12 @@
+*.pdb
+*.exp
+*.lib
+*.ilk
+*.sdf
+*.opensdf
+*.exe
+*.dll
+
+**/x64/
+**/Debug/
+**/Release/
